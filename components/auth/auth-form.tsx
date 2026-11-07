@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { EyeIcon, EyeOffIcon } from "lucide-react"
+import { EyeIcon, EyeOffIcon, LoaderIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -27,6 +27,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 type AuthMode = "sign-in" | "sign-up"
 
+export type AuthSubmitHandler = (
+  data: Record<string, FormDataEntryValue>
+) => Promise<void> | void
+
 const AUTH_TABS: Array<{
   mode: AuthMode
   value: string
@@ -42,22 +46,48 @@ const AUTH_TABS: Array<{
   },
 ]
 
-export function AuthForm({ mode }: { mode: AuthMode }) {
+export function AuthForm({
+  mode,
+  onSubmit,
+}: {
+  mode: AuthMode
+  /** Async submit handler (e.g. real auth). Omitted = placeholder data collection. */
+  onSubmit?: AuthSubmitHandler
+}) {
   const [collectedData, setCollectedData] = useState<Record<
     string,
     FormDataEntryValue
   > | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
     const data = Object.fromEntries(formData.entries())
 
-    // TODO: replace with real auth integration (better-auth signIn/signUp)
-    console.log(`[${mode}] collected form data:`, data)
-    setCollectedData(data)
+    if (!onSubmit) {
+      // TODO: replace with real auth integration (better-auth signIn/signUp)
+      console.log(`[${mode}] collected form data:`, data)
+      setCollectedData(data)
+      return
+    }
+
+    setPending(true)
+    setError(null)
+    try {
+      await onSubmit(data)
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Something went wrong. Please try again."
+      )
+    } finally {
+      setPending(false)
+    }
   }
 
   const isSignIn = mode === "sign-in"
@@ -84,6 +114,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                 key={tab.value}
                 value={tab.value}
                 render={<Link href={tab.href} />}
+                nativeButton={false}
                 className="h-9 rounded-full text-white/50 hover:text-white data-active:bg-[#6941f6] data-active:text-white dark:data-active:border-transparent"
               >
                 {tab.label}
@@ -197,11 +228,23 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                 </Label>
               </div>
 
+              {error && <FieldError>{error}</FieldError>}
+
               <Button
                 type="submit"
+                disabled={pending}
                 className="h-11 w-full rounded-xl bg-[#6941f6] text-[15px] text-white hover:bg-[#5a35db]"
               >
-                {isSignIn ? "Sign In" : "Create Account"}
+                {pending ? (
+                  <>
+                    <LoaderIcon aria-hidden="true" className="animate-spin" />
+                    {isSignIn ? "Signing in..." : "Creating account..."}
+                  </>
+                ) : isSignIn ? (
+                  "Sign In"
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </FieldGroup>
           </form>

@@ -140,6 +140,7 @@ export function HeroSection() {
               <Button
                 key={position}
                 render={<a href={`/jobs?q=${encodeURIComponent(position)}`} />}
+                nativeButton={false}
                 variant="secondary"
                 className="h-9 rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm text-white/90 hover:bg-white/10 hover:text-white"
               >

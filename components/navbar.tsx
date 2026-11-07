@@ -43,6 +43,7 @@ export function Navbar() {
               <Button
                 key={link.label}
                 render={<Link href={link.href} />}
+                nativeButton={false}
                 variant="ghost"
                 className="text-white/90 hover:bg-white/10 hover:text-white"
               >
@@ -57,6 +58,7 @@ export function Navbar() {
 
             <Button
               render={<Link href="/sign-in" />}
+              nativeButton={false}
               variant="ghost"
               className="text-[#8b7ff6] hover:bg-white/10 hover:text-[#a99bff]"
             >
@@ -86,6 +88,7 @@ export function Navbar() {
                   <DropdownMenuItem
                     key={link.label}
                     render={<Link href={link.href} />}
+                    nativeButton={false}
                     className="cursor-pointer py-1.5"
                   >
                     {link.label}
@@ -103,6 +106,7 @@ export function Navbar() {
 
             <Button
               render={<Link href="/sign-up" />}
+              nativeButton={false}
               className="h-9 rounded-xl bg-[#6941f6] px-3.5 text-sm text-white hover:bg-[#5a35db] sm:h-10 sm:px-5 sm:text-[15px]"
             >
               Get Started

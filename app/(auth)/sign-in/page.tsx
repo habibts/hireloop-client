@@ -1,11 +1,28 @@
-import type { Metadata } from "next"
+"use client"
 
-import { AuthForm } from "@/components/auth/auth-form"
+import { useRouter } from "next/navigation"
 
-export const metadata: Metadata = {
-  title: "Sign In — HireLoop",
-}
+import { AuthForm, type AuthSubmitHandler } from "@/components/auth/auth-form"
+import { authClient } from "@/lib/auth-client"
 
 export default function SignInPage() {
-  return <AuthForm mode="sign-in" />
+  const router = useRouter()
+
+  const handleSignIn: AuthSubmitHandler = async (data) => {
+    const { error } = await authClient.signIn.email({
+      email: String(data.email ?? ""),
+      password: String(data.password ?? ""),
+      rememberMe: data.accepted === "true",
+    })
+
+    if (error) {
+      throw new Error(
+        error.message ? "Invalid email or password." : "Failed to sign in."
+      )
+    }
+
+    router.push("/")
+  }
+
+  return <AuthForm mode="sign-in" onSubmit={handleSignIn} />
 }
