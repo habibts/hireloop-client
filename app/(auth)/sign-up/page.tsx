@@ -14,6 +14,13 @@ export default function SignUpPage() {
       email: String(data.email ?? ""),
       password: String(data.password ?? ""),
       callbackURL: "/",
+      // `role` is a custom additional field declared in lib/auth.ts —
+      // passed via body since it's not part of the inferred client types
+      fetchOptions: {
+        body: {
+          role: String(data.role ?? "seeker"),
+        },
+      },
     })
 
     if (error) {

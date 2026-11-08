@@ -24,6 +24,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
 
 type AuthMode = "sign-in" | "sign-up"
 
@@ -37,14 +38,20 @@ const AUTH_TABS: Array<{
   label: string
   href: string
 }> = [
-  { mode: "sign-in", value: "sign-in", label: "Sign In", href: "/sign-in" },
-  {
-    mode: "sign-up",
-    value: "sign-up",
-    label: "Create Account",
-    href: "/sign-up",
-  },
-]
+    { mode: "sign-in", value: "sign-in", label: "Sign In", href: "/sign-in" },
+    {
+      mode: "sign-up",
+      value: "sign-up",
+      label: "Create Account",
+      href: "/sign-up",
+    },
+  ]
+
+const ROLES = [
+  { value: "seeker", label: "Job Seeker" },
+  { value: "recruiter", label: "Recruiter" },
+  { value: "admin", label: "Admin" },
+] as const
 
 export function AuthForm({
   mode,
@@ -61,12 +68,17 @@ export function AuthForm({
   const [showPassword, setShowPassword] = useState(false)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [role, setRole] = useState<string>("seeker")
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
     const data = Object.fromEntries(formData.entries())
+
+    if (mode === "sign-up") {
+      data.role = role
+    }
 
     if (!onSubmit) {
       // TODO: replace with real auth integration (better-auth signIn/signUp)
@@ -209,6 +221,43 @@ export function AuthForm({
                 )}
                 <FieldError />
               </Field>
+
+              {mode === "sign-up" && (
+                <Field>
+                  <FieldLabel className="text-white/80">
+                    I am a
+                    <FieldDescription className="text-xs font-normal text-white/40">
+                      Pick the option that describes you.
+                    </FieldDescription>
+                  </FieldLabel>
+                  <div
+                    role="radiogroup"
+                    aria-label="Account type"
+                    className="grid grid-cols-3 gap-2"
+                  >
+                    {ROLES.map((option) => {
+                      const selected = role === option.value
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => setRole(option.value)}
+                          className={cn(
+                            "h-10 rounded-xl border text-sm transition-colors",
+                            selected
+                              ? "border-[#6941f6] bg-[#6941f6] font-medium text-white"
+                              : "border-white/10 bg-white/[0.04] text-white/60 hover:border-white/20 hover:text-white"
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </Field>
+              )}
 
               <div className="flex items-center gap-2">
                 <Checkbox
