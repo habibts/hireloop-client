@@ -85,8 +85,11 @@ export function Navbar() {
                       <AvatarImage src={user.image} alt={user.name ?? "User"} />
                     ) : null}
                     <AvatarFallback className="bg-[#6941f6] text-sm text-white">
-                      {(user.name?.trim()?.[0] ?? user.email?.[0] ?? "U")
-                        .toUpperCase()}
+                      {(
+                        user.name?.trim()?.[0] ??
+                        user.email?.[0] ??
+                        "U"
+                      ).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>

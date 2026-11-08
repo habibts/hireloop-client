@@ -38,14 +38,14 @@ const AUTH_TABS: Array<{
   label: string
   href: string
 }> = [
-    { mode: "sign-in", value: "sign-in", label: "Sign In", href: "/sign-in" },
-    {
-      mode: "sign-up",
-      value: "sign-up",
-      label: "Create Account",
-      href: "/sign-up",
-    },
-  ]
+  { mode: "sign-in", value: "sign-in", label: "Sign In", href: "/sign-in" },
+  {
+    mode: "sign-up",
+    value: "sign-up",
+    label: "Create Account",
+    href: "/sign-up",
+  },
+]
 
 const ROLES = [
   { value: "seeker", label: "Job Seeker" },
