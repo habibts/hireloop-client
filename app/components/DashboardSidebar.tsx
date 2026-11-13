@@ -9,6 +9,7 @@ import {
   BookmarkIcon,
   BriefcaseIcon,
   Building2Icon,
+  CirclePlusIcon,
   FileTextIcon,
   LayoutGridIcon,
   LogOutIcon,
@@ -70,6 +71,11 @@ const NAV_ITEMS_BY_ROLE: Record<Role, NavItem[]> = {
   ],
   recruiter: [
     { label: "Dashboard", url: "/deshboard/recruiter", icon: LayoutGridIcon },
+    {
+      label: "Add Job",
+      url: "/deshboard/recruiter/add-job",
+      icon: CirclePlusIcon,
+    },
     {
       label: "Manage Jobs",
       url: "/deshboard/recruiter/jobs",
