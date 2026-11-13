@@ -1,19 +1,5 @@
-export type JobFormData = {
-  title: string
-  companyName: string
-  category: string
-  jobType: string
-  isRemote: boolean
-  location: string
-  deadline: string | null
-  minSalary: number | null
-  maxSalary: number | null
-  frequency: string | null
-  responsibilities: string
-  qualifications: string
-}
-
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3001"
+import { API_BASE_URL } from "@/lib/api"
+import type { JobFormData } from "@/lib/types"
 
 export const createJob = async (data: JobFormData) => {
   try {

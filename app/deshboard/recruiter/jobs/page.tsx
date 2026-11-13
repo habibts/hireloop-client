@@ -10,9 +10,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { ManageJobsTable, type Job } from "@/app/components/ManageJobsTable"
-
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3001"
+import { ManageJobsTable } from "@/app/components/ManageJobsTable"
+import { API_BASE_URL } from "@/lib/api"
+import type { Job } from "@/lib/types"
 
 async function getJobs(): Promise<Job[]> {
   try {

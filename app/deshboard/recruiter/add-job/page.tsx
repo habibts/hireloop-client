@@ -21,79 +21,28 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Input } from "@/components/ui/input"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  FieldLabel,
+  LabeledInput,
+  LabeledSelect,
+  LabeledTextarea,
+} from "@/components/form/fields"
 import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+import {
+  JOB_CATEGORIES,
+  JOB_TYPES,
+  SALARY_FREQUENCIES,
+} from "@/lib/constants"
 
-const JOB_CATEGORIES = [
-  "Engineering & Tech",
-  "Design & Creative",
-  "Marketing & Sales",
-  "Finance & Legal",
-  "Healthcare",
-  "Education & Training",
-  "Operations & Support",
-  "Other",
-]
+const categoryOptions = JOB_CATEGORIES.map((category) => ({
+  value: category,
+  label: category,
+}))
 
-const JOB_TYPES = [
-  { value: "full-time", label: "Full-time" },
-  { value: "part-time", label: "Part-time" },
-  { value: "contract", label: "Contract" },
-  { value: "internship", label: "Internship" },
-]
-
-const SALARY_FREQUENCIES = [
-  "per hour",
-  "per day",
-  "per week",
-  "per month",
-  "per year",
-]
-
-const inputClasses =
-  "h-11 border-white/10 bg-white/[0.04] pl-9 text-white placeholder:text-white/40"
-
-const labelClasses = "text-sm font-medium text-white/80"
-
-const RequiredMark = () => (
-  <span className="text-[#8b7ff6]" aria-hidden="true">
-    {" "}
-    *
-  </span>
-)
-
-function FieldLabel({
-  htmlFor,
-  required,
-  hint,
-  children,
-}: {
-  htmlFor?: string
-  required?: boolean
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <label
-      htmlFor={htmlFor}
-      className="flex items-baseline justify-between gap-2"
-    >
-      <span className={labelClasses}>
-        {children}
-        {required ? <RequiredMark /> : null}
-      </span>
-      {hint ? <span className="text-xs text-zinc-500">{hint}</span> : null}
-    </label>
-  )
-}
+const frequencyOptions = SALARY_FREQUENCIES.map((frequency) => ({
+  value: frequency,
+  label: frequency,
+}))
 
 export default function AddJobPage() {
   const router = useRouter()
@@ -221,60 +170,35 @@ export default function AddJobPage() {
           </h2>
 
           <div className="space-y-1.5">
-            <FieldLabel htmlFor="job-title" required>
-              Job Title
-            </FieldLabel>
-            <Input
+            <LabeledInput
               id="job-title"
+              label="Job Title"
+              required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Frontend Developer"
-              className="h-11 border-white/10 bg-white/[0.04] px-3.5 text-white placeholder:text-white/40"
             />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1.5">
-              <FieldLabel htmlFor="company-name" required>
-                Company Name
-              </FieldLabel>
-              <div className="relative">
-                <BuildingIcon
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500"
-                />
-                <Input
-                  id="company-name"
-                  value={companyName}
-                  onChange={(event) => setCompanyName(event.target.value)}
-                  placeholder="HirePulse Network"
-                  className={inputClasses}
-                />
-              </div>
-            </div>
+            <LabeledInput
+              id="company-name"
+              label="Company Name"
+              required
+              icon={BuildingIcon}
+              value={companyName}
+              onChange={(event) => setCompanyName(event.target.value)}
+              placeholder="HirePulse Network"
+            />
 
-            <div className="space-y-1.5">
-              <FieldLabel required>Job Category</FieldLabel>
-              <Select
-                value={category}
-                onValueChange={(value) => setCategory(value ?? "")}
-              >
-                <SelectTrigger className="h-11 w-full border-white/10 bg-white/[0.04] px-3.5 py-0 text-white">
-                  <SelectValue>
-                    {category || (
-                      <span className="text-white/40">Select a category</span>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {JOB_CATEGORIES.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <LabeledSelect
+              label="Job Category"
+              required
+              placeholder="Select a category"
+              options={categoryOptions}
+              value={category}
+              onValueChange={(value) => setCategory(value ?? "")}
+            />
           </div>
 
           <div className="space-y-1.5">
@@ -331,106 +255,57 @@ export default function AddJobPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1.5">
-              <FieldLabel htmlFor="job-location" hint="Required">
-                Job Location (location)
-              </FieldLabel>
-              <div className="relative">
-                <MapPinIcon
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500"
-                />
-                <Input
-                  id="job-location"
-                  value={location}
-                  onChange={(event) => setLocation(event.target.value)}
-                  placeholder="New York, USA"
-                  className={inputClasses}
-                />
-              </div>
-            </div>
+            <LabeledInput
+              id="job-location"
+              label="Job Location"
+              hint="Required"
+              icon={MapPinIcon}
+              value={location}
+              onChange={(event) => setLocation(event.target.value)}
+              placeholder="New York, USA"
+            />
 
-            <div className="space-y-1.5">
-              <FieldLabel htmlFor="application-deadline">
-                Application Deadline (deadline)
-              </FieldLabel>
-              <div className="relative">
-                <CalendarIcon
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500"
-                />
-                <Input
-                  id="application-deadline"
-                  type="date"
-                  value={deadline}
-                  onChange={(event) => setDeadline(event.target.value)}
-                  className={`${inputClasses} [color-scheme:dark]`}
-                />
-              </div>
-            </div>
+            <LabeledInput
+              id="application-deadline"
+              label="Application Deadline"
+              type="date"
+              icon={CalendarIcon}
+              value={deadline}
+              onChange={(event) => setDeadline(event.target.value)}
+              className="[color-scheme:dark]"
+            />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-1.5">
-              <FieldLabel htmlFor="min-salary">Min Salary / Rate</FieldLabel>
-              <div className="relative">
-                <EuroIcon
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500"
-                />
-                <Input
-                  id="min-salary"
-                  type="number"
-                  min="0"
-                  value={minSalary}
-                  onChange={(event) => setMinSalary(event.target.value)}
-                  placeholder="25"
-                  className={inputClasses}
-                />
-              </div>
-            </div>
+            <LabeledInput
+              id="min-salary"
+              label="Min Salary / Rate"
+              type="number"
+              min="0"
+              icon={EuroIcon}
+              value={minSalary}
+              onChange={(event) => setMinSalary(event.target.value)}
+              placeholder="25"
+            />
 
-            <div className="space-y-1.5">
-              <FieldLabel htmlFor="max-salary">Max Salary / Rate</FieldLabel>
-              <div className="relative">
-                <EuroIcon
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500"
-                />
-                <Input
-                  id="max-salary"
-                  type="number"
-                  min="0"
-                  value={maxSalary}
-                  onChange={(event) => setMaxSalary(event.target.value)}
-                  placeholder="40"
-                  className={inputClasses}
-                />
-              </div>
-            </div>
+            <LabeledInput
+              id="max-salary"
+              label="Max Salary / Rate"
+              type="number"
+              min="0"
+              icon={EuroIcon}
+              value={maxSalary}
+              onChange={(event) => setMaxSalary(event.target.value)}
+              placeholder="40"
+            />
 
-            <div className="space-y-1.5">
-              <FieldLabel>Frequency</FieldLabel>
-              <Select
-                value={frequency}
-                onValueChange={(value) => setFrequency(value ?? "")}
-              >
-                <SelectTrigger className="h-11 w-full border-white/10 bg-white/[0.04] px-3.5 py-0 text-white">
-                  <SelectValue>
-                    {frequency || (
-                      <span className="text-white/40">per hour</span>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {SALARY_FREQUENCIES.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <LabeledSelect
+              label="Frequency"
+              placeholder="per hour"
+              options={frequencyOptions}
+              value={frequency}
+              onValueChange={(value) => setFrequency(value ?? "")}
+            />
           </div>
         </section>
 
@@ -444,33 +319,27 @@ export default function AddJobPage() {
             3. Responsibilities &amp; Requirements
           </h2>
 
-          <div className="space-y-1.5">
-            <FieldLabel htmlFor="responsibilities" required>
-              Key Responsibilities
-            </FieldLabel>
-            <Textarea
-              id="responsibilities"
-              value={responsibilities}
-              onChange={(event) => setResponsibilities(event.target.value)}
-              placeholder="Describe the day-to-day responsibilities..."
-              className="min-h-28 rounded-xl border-white/10 bg-white/[0.04] p-4 text-white placeholder:text-white/40"
-            />
-          </div>
+          <LabeledTextarea
+            id="responsibilities"
+            label="Key Responsibilities"
+            required
+            value={responsibilities}
+            onChange={(event) => setResponsibilities(event.target.value)}
+            placeholder="Describe the day-to-day responsibilities..."
+            className="min-h-28"
+          />
 
-          <div className="space-y-1.5">
-            <FieldLabel htmlFor="qualifications" required>
-              Qualifications &amp; Requirements
-            </FieldLabel>
-            <Textarea
-              id="qualifications"
-              value={qualifications}
-              onChange={(event) => setQualifications(event.target.value)}
-              placeholder={
-                "• 3+ years of experience with React...\n• Solid understanding of..."
-              }
-              className="min-h-36 rounded-xl border-white/10 bg-white/[0.04] p-4 text-white placeholder:text-white/40"
-            />
-          </div>
+          <LabeledTextarea
+            id="qualifications"
+            label="Qualifications & Requirements"
+            required
+            value={qualifications}
+            onChange={(event) => setQualifications(event.target.value)}
+            placeholder={
+              "• 3+ years of experience with React...\n• Solid understanding of..."
+            }
+            className="min-h-36"
+          />
         </section>
 
         {error && (

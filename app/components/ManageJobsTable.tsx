@@ -23,6 +23,7 @@ import {
 
 import { cn } from "cn"
 import { toast } from "@/components/ui/toast"
+import type { Job } from "@/lib/types"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,24 +56,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-export type Job = {
-  _id: string
-  title: string
-  companyName: string
-  category: string
-  jobType: string
-  isRemote: boolean
-  location: string
-  deadline: string | null
-  minSalary: number | null
-  maxSalary: number | null
-  frequency: string | null
-  responsibilities: string
-  qualifications: string
-  status: string
-  createdAt: string | null
-}
 
 type CategoryStyle = {
   icon: LucideIcon
@@ -213,6 +196,44 @@ export function ManageJobsTable({ jobs }: { jobs: Job[] }) {
     } finally {
       setDeletingId(null)
       setJobToDelete(null)
+    }
+  }
+
+  async function handleUpdateStatus(job: Job) {
+    if (deletingId) return
+    const nextStatus = job.status === "closed" ? "open" : "closed"
+    setDeletingId(job._id)
+    try {
+      const response = await fetch(`/api/jobs/${job._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error ?? "Failed to update the job.")
+      }
+      toast.add({
+        title: nextStatus === "closed" ? "Job post closed" : "Job post reopened",
+        description:
+          nextStatus === "closed"
+            ? `${job.title} is no longer accepting applications.`
+            : `${job.title} is active again.`,
+        type: "success",
+      })
+      router.refresh()
+    } catch (error) {
+      console.error(error)
+      toast.add({
+        title: "Failed to update the job",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again.",
+        type: "error",
+      })
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -414,6 +435,14 @@ export function ManageJobsTable({ jobs }: { jobs: Job[] }) {
                         >
                           <DropdownMenuItem onClick={() => setDetailsJob(job)}>
                             View details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={deletingId === job._id}
+                            onClick={() => void handleUpdateStatus(job)}
+                          >
+                            {job.status === "closed"
+                              ? "Reopen job post"
+                              : "Mark as closed"}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

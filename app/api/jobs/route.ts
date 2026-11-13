@@ -1,24 +1,10 @@
-import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 
-import { auth } from "@/lib/auth"
-
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3001"
+import { API_BASE_URL, requireRecruiter } from "@/lib/api"
 
 export async function POST(request: Request) {
-  const session = await auth.api.getSession({ headers: await headers() })
-
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const user = session.user as { id: string; role?: string }
-  if (user.role !== "recruiter") {
-    return NextResponse.json(
-      { error: "Only recruiters can post jobs" },
-      { status: 403 }
-    )
-  }
+  const guard = await requireRecruiter()
+  if (guard) return guard
 
   const body = await request.json()
 

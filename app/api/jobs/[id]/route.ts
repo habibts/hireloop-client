@@ -1,39 +1,27 @@
-import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 
-import { auth } from "@/lib/auth"
+import { API_BASE_URL, requireRecruiter } from "@/lib/api"
 
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3001"
-
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+async function forwardToBackend(
+  id: string,
+  method: "DELETE" | "PATCH",
+  body?: string
 ) {
-  const session = await auth.api.getSession({ headers: await headers() })
-
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const user = session.user as { role?: string }
-  if (user.role !== "recruiter") {
-    return NextResponse.json(
-      { error: "Only recruiters can manage jobs" },
-      { status: 403 }
-    )
-  }
-
-  const { id } = await params
-
   try {
     const backendResponse = await fetch(`${API_BASE_URL}/jobs/${id}`, {
-      method: "DELETE",
+      method,
+      ...(body !== undefined
+        ? {
+            headers: { "Content-Type": "application/json" },
+            body,
+          }
+        : {}),
     })
 
     if (!backendResponse.ok) {
       const data = await backendResponse.json().catch(() => null)
       return NextResponse.json(
-        { error: data?.error ?? "Failed to delete the job" },
+        { error: data?.error ?? "Failed to update the job" },
         { status: backendResponse.status }
       )
     }
@@ -45,4 +33,27 @@ export async function DELETE(
       { status: 502 }
     )
   }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const guard = await requireRecruiter()
+  if (guard) return guard
+
+  const { id } = await params
+  const body = await request.json()
+  return forwardToBackend(id, "PATCH", JSON.stringify(body))
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const guard = await requireRecruiter()
+  if (guard) return guard
+
+  const { id } = await params
+  return forwardToBackend(id, "DELETE")
 }
