@@ -4,26 +4,23 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import {
-  BriefcaseIcon,
   CalendarIcon,
-  CodeXmlIcon,
   EllipsisVerticalIcon,
   GlobeIcon,
-  GraduationCapIcon,
-  HeartPulseIcon,
-  LandmarkIcon,
   MapPinIcon,
-  MegaphoneIcon,
-  PaletteIcon,
   PencilIcon,
-  SettingsIcon,
   Trash2Icon,
-  type LucideIcon,
 } from "lucide-react"
 
 import { cn } from "cn"
 import { toast } from "@/components/ui/toast"
 import type { Job } from "@/lib/types"
+import {
+  formatCompensation,
+  formatDeadline,
+  formatPostedAgo,
+  getCategoryStyle,
+} from "@/lib/job-display"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,108 +54,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-type CategoryStyle = {
-  icon: LucideIcon
-  tile: string
-  text: string
-}
-
-const CATEGORY_STYLES: Record<string, CategoryStyle> = {
-  "Engineering & Tech": {
-    icon: CodeXmlIcon,
-    tile: "bg-[#6941f6]/15 text-[#8b7ff6]",
-    text: "text-[#8b7ff6]",
-  },
-  "Design & Creative": {
-    icon: PaletteIcon,
-    tile: "bg-orange-500/15 text-orange-400",
-    text: "text-orange-400",
-  },
-  "Marketing & Sales": {
-    icon: MegaphoneIcon,
-    tile: "bg-pink-500/15 text-pink-400",
-    text: "text-pink-400",
-  },
-  "Finance & Legal": {
-    icon: LandmarkIcon,
-    tile: "bg-emerald-500/15 text-emerald-400",
-    text: "text-emerald-400",
-  },
-  Healthcare: {
-    icon: HeartPulseIcon,
-    tile: "bg-red-500/15 text-red-400",
-    text: "text-red-400",
-  },
-  "Education & Training": {
-    icon: GraduationCapIcon,
-    tile: "bg-sky-500/15 text-sky-400",
-    text: "text-sky-400",
-  },
-  "Operations & Support": {
-    icon: SettingsIcon,
-    tile: "bg-amber-500/15 text-amber-400",
-    text: "text-amber-400",
-  },
-  Other: {
-    icon: BriefcaseIcon,
-    tile: "bg-zinc-500/15 text-zinc-400",
-    text: "text-zinc-400",
-  },
-}
-
-const FALLBACK_CATEGORY_STYLE: CategoryStyle = {
-  icon: BriefcaseIcon,
-  tile: "bg-zinc-500/15 text-zinc-400",
-  text: "text-zinc-400",
-}
-
-const FREQUENCY_SHORT: Record<string, string> = {
-  "per hour": "hr",
-  "per day": "day",
-  "per week": "wk",
-  "per month": "mo",
-  "per year": "yr",
-}
-
 const TABLE_HEAD_CLASSES =
   "px-4 text-xs font-medium tracking-wider text-zinc-500 uppercase"
 const TABLE_CELL_CLASSES = "px-4"
-
-function formatCompensation(job: Job) {
-  if (job.minSalary == null && job.maxSalary == null) return "—"
-  const format = (value: number) =>
-    `€${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)}`
-  if (job.minSalary != null && job.maxSalary != null) {
-    return `${format(job.minSalary)} – ${format(job.maxSalary)}${
-      job.frequency ? ` / ${FREQUENCY_SHORT[job.frequency] ?? job.frequency}` : ""
-    }`
-  }
-  const single = format(job.minSalary ?? job.maxSalary ?? 0)
-  return `${single}${job.frequency ? ` / ${FREQUENCY_SHORT[job.frequency] ?? job.frequency}` : ""}`
-}
-
-function formatDeadline(value: string | null) {
-  if (!value) return "—"
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return "—"
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
-
-function formatPostedAgo(value: string | null) {
-  if (!value) return null
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return null
-  const days = Math.max(
-    0,
-    Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
-  )
-  if (days === 0) return "Posted today"
-  return `Posted ${days}d ago`
-}
 
 export function ManageJobsTable({ jobs }: { jobs: Job[] }) {
   const router = useRouter()
@@ -214,7 +112,8 @@ export function ManageJobsTable({ jobs }: { jobs: Job[] }) {
         throw new Error(data?.error ?? "Failed to update the job.")
       }
       toast.add({
-        title: nextStatus === "closed" ? "Job post closed" : "Job post reopened",
+        title:
+          nextStatus === "closed" ? "Job post closed" : "Job post reopened",
         description:
           nextStatus === "closed"
             ? `${job.title} is no longer accepting applications.`
@@ -250,29 +149,34 @@ export function ManageJobsTable({ jobs }: { jobs: Job[] }) {
                 Company &amp; Location
               </TableHead>
               <TableHead className={TABLE_HEAD_CLASSES}>Type</TableHead>
-              <TableHead className={cn(TABLE_HEAD_CLASSES, "hidden lg:table-cell")}>
+              <TableHead
+                className={cn(TABLE_HEAD_CLASSES, "hidden lg:table-cell")}
+              >
                 Compensation
               </TableHead>
-              <TableHead className={cn(TABLE_HEAD_CLASSES, "hidden xl:table-cell")}>
+              <TableHead
+                className={cn(TABLE_HEAD_CLASSES, "hidden xl:table-cell")}
+              >
                 Applicants
               </TableHead>
-              <TableHead className={cn(TABLE_HEAD_CLASSES, "hidden md:table-cell")}>
+              <TableHead
+                className={cn(TABLE_HEAD_CLASSES, "hidden md:table-cell")}
+              >
                 Status
               </TableHead>
-              <TableHead className={cn(TABLE_HEAD_CLASSES, "hidden md:table-cell")}>
+              <TableHead
+                className={cn(TABLE_HEAD_CLASSES, "hidden md:table-cell")}
+              >
                 Deadline
               </TableHead>
-              <TableHead
-                className={cn(TABLE_HEAD_CLASSES, "text-right")}
-              >
+              <TableHead className={cn(TABLE_HEAD_CLASSES, "text-right")}>
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {jobs.map((job) => {
-              const category =
-                CATEGORY_STYLES[job.category] ?? FALLBACK_CATEGORY_STYLE
+              const category = getCategoryStyle(job.category)
               const CategoryIcon = category.icon
               const isClosed = job.status === "closed"
               const postedAgo = formatPostedAgo(job.createdAt)
@@ -328,7 +232,9 @@ export function ManageJobsTable({ jobs }: { jobs: Job[] }) {
                         />
                       )}
                       <span className="truncate">
-                        {job.isRemote ? `Remote (${job.location})` : job.location}
+                        {job.isRemote
+                          ? `Remote (${job.location})`
+                          : job.location}
                       </span>
                     </p>
                   </TableCell>
@@ -361,7 +267,9 @@ export function ManageJobsTable({ jobs }: { jobs: Job[] }) {
                   </TableCell>
 
                   {/* Status */}
-                  <TableCell className={cn(TABLE_CELL_CLASSES, "hidden md:table-cell")}>
+                  <TableCell
+                    className={cn(TABLE_CELL_CLASSES, "hidden md:table-cell")}
+                  >
                     <span
                       className={cn(
                         "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium",
@@ -382,7 +290,9 @@ export function ManageJobsTable({ jobs }: { jobs: Job[] }) {
                   </TableCell>
 
                   {/* Deadline */}
-                  <TableCell className={cn(TABLE_CELL_CLASSES, "hidden md:table-cell")}>
+                  <TableCell
+                    className={cn(TABLE_CELL_CLASSES, "hidden md:table-cell")}
+                  >
                     <p className="text-sm text-zinc-200">
                       {formatDeadline(job.deadline)}
                     </p>
